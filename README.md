@@ -2,6 +2,8 @@
 
 > **A centralized intelligence and comparison platform where developers, researchers, and enterprises discover, explore, compare, and evaluate AI models from multiple AI labs and inference providers.**
 
+**Live URL**: [https://oneatlas-brown.vercel.app](https://oneatlas-brown.vercel.app)
+
 [![Next.js](https://img.shields.io/badge/Next.js-14.2-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue?style=flat&logo=typescript)](https://www.typescriptlang.org/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.4-38B2AC?style=flat&logo=tailwind-css)](https://tailwindcss.com/)
