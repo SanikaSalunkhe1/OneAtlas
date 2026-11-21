@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model Company {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  website     String?
+  logo        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  models      Model[]
+
+  @@index([slug])
+}
+
+model Model {
+  id                  String             @id @default(cuid())
+  name                String
+  slug                String             @unique
+  modelId             String             @unique
+  description         String?            @db.Text
+  companyId           String
+  company             Company            @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  modelType           String             @default("chat")
+  contextLength       Int?
+  maxOutput           Int?
+  inputModalities     String[]           @default(["text"])
+  outputModalities    String[]           @default(["text"])
+  reasoning           Boolean            @default(false)
+  toolCalling         Boolean            @default(false)
+  structuredOutput    Boolean            @default(false)
+  supportsTemperature Boolean            @default(true)
+  openWeights         Boolean            @default(false)
+  deprecated          Boolean            @default(false)
+  releasedAt          DateTime?
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+
+  providers           ModelProvider[]
+  capabilities        ModelCapability[]
+  benchmarks          ModelBenchmark[]
+
+  @@index([slug])
+  @@index([companyId])
+  @@index([modelType])
+  @@index([openWeights])
+}
+
+model Provider {
+  id          String          @id @default(cuid())
+  name        String
+  slug        String          @unique
+  description String?         @db.Text
+  website     String?
+  logo        String?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  models      ModelProvider[]
+
+  @@index([slug])
+}
+
+model ModelProvider {
+  id           String    @id @default(cuid())
+  modelId      String
+  providerId   String
+  model        Model     @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  provider     Provider  @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  inputPrice   Float?    // Price per 1M tokens in USD ($)
+  outputPrice  Float?    // Price per 1M tokens in USD ($)
+  cachePrice   Float?    // Cached price per 1M tokens in USD ($)
+  availability String    @default("available")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([modelId, providerId])
+  @@index([modelId])
+  @@index([providerId])
+}
+
+model Capability {
+  id        String            @id @default(cuid())
+  name      String
+  slug      String            @unique
+  category  String            @default("general")
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+  models    ModelCapability[]
+
+  @@index([slug])
+}
+
+model ModelCapability {
+  id           String     @id @default(cuid())
+  modelId      String
+  capabilityId String
+  model        Model      @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  capability   Capability @relation(fields: [capabilityId], references: [id], onDelete: Cascade)
+
+  @@unique([modelId, capabilityId])
+  @@index([modelId])
+  @@index([capabilityId])
+}
+
+model Benchmark {
+  id          String           @id @default(cuid())
+  name        String
+  slug        String           @unique
+  category    String
+  description String?          @db.Text
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+  scores      ModelBenchmark[]
+
+  @@index([slug])
+  @@index([category])
+}
+
+model ModelBenchmark {
+  id          String    @id @default(cuid())
+  modelId     String
+  benchmarkId String
+  model       Model     @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  benchmark   Benchmark @relation(fields: [benchmarkId], references: [id], onDelete: Cascade)
+  score       Float
+  source      String?
+  isDemo      Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([modelId, benchmarkId])
+  @@index([modelId])
+  @@index([benchmarkId])
+}
